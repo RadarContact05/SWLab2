@@ -9,6 +9,10 @@ struct LinkedList {
 
 struct LinkedList *add(int id, double sensorData) {
     struct LinkedList *el = malloc(sizeof(struct LinkedList));
+    if (el == NULL) {
+        printf("\nNode is NULL\n");
+        exit(1);
+    }
     el->id = id;
     el->sensorData = sensorData;
     el->next = NULL;
@@ -37,10 +41,20 @@ void printList(struct LinkedList *first) {
         printf("%d\t%f\n", current->id, current->sensorData);
         current = current->next;
     }
-
 }
 
-void removeItem(struct LinkedList **first, struct LinkedList *el) {
+void freeMem(struct LinkedList *first) {
+    
+    struct LinkedList *current = first;
+    while(current != NULL) {
+        struct LinkedList *temp = current;
+        current = current->next;
+        free(temp);
+    }
+}
+
+void remove(struct LinkedList **first, struct LinkedList *el) {
+    if (first == NULL || *first == NULL || el == NULL) return;
     if (*first == el) {
         *first = el->next;
         el->next = NULL;
@@ -59,7 +73,11 @@ void removeItem(struct LinkedList **first, struct LinkedList *el) {
 }
 
 struct LinkedList *readSensor(int id) {
-    struct LinkedList *node = calloc(1, sizeof(struct LinkedList));
+    struct LinkedList *node = malloc(sizeof(struct LinkedList));
+    if (node == NULL) {
+        printf("\nNode is NULL\n");
+        exit(1);
+    }
 
     node->id = id;
     node->sensorData = (double)rand() / (double)RAND_MAX;
@@ -81,7 +99,7 @@ void sortList (struct LinkedList **first) {
             }
             cur = cur->next;
         }
-        removeItem(first, min);
+        remove(first, min);
 
         min->next = NULL;
 
@@ -99,14 +117,19 @@ void sortList (struct LinkedList **first) {
 int main(void) {
     struct LinkedList *first = NULL;
 
-    for (int id = 1; id < 10; id++) {
+    for (int id = 1; id <= 10; id++) {
         struct LinkedList *node = readSensor(id);
         insertFirst(&first, node);
     }
+
+    printf("Generated list:\n");
+    printList(first);
+
     sortList(&first);
     printf("\nSorted list:\n");
     printList(first);
 
+    freeMem(first);
 
     return 0;
 }
